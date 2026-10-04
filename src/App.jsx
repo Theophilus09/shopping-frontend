@@ -1,5 +1,7 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { App as CapacitorApp } from '@capacitor/app';
+import { supabase } from './services/supabaseClient';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Navbar from './components/Navbar';
@@ -16,6 +18,36 @@ import Login from './pages/Login';
 import MyOrders from './pages/MyOrders';
 
 export default function App() {
+  useEffect(() => {
+    let listenerHandle;
+
+    const setupListener = async () => {
+      listenerHandle = await CapacitorApp.addListener('appUrlOpen', async (data) => {
+        // Intercept OAuth/Magic link callback tokens on mobile
+        if (data.url.includes('#access_token') || data.url.includes('?code=')) {
+          const url = new URL(data.url.replace('#', '?'));
+          const access_token = url.searchParams.get('access_token');
+          const refresh_token = url.searchParams.get('refresh_token');
+
+          if (access_token && refresh_token) {
+            await supabase.auth.setSession({
+              access_token,
+              refresh_token
+            });
+          }
+        }
+      });
+    };
+
+    setupListener();
+
+    return () => {
+      if (listenerHandle) {
+        listenerHandle.remove();
+      }
+    };
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

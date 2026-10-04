@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ModernStore</string>
+    <string name="title_activity_main">ModernStore</string>
+    <string name="package_name">com.modernstore.app</string>
+    <string name="custom_url_scheme">com.modernstore.app</string>
+</resources>
